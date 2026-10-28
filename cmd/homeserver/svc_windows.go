@@ -271,26 +271,34 @@ func svcRestart() error {
 	})
 }
 
+// serviceState uses read-only rights so it works without elevation.
 func serviceState() string {
-	m, err := mgr.Connect()
+	m, err := windows.OpenSCManager(nil, nil, windows.SC_MANAGER_CONNECT)
 	if err != nil {
 		return "unknown (cannot query Service Control Manager)"
 	}
-	defer m.Disconnect()
-	s, err := m.OpenService(serviceName)
+	defer windows.CloseServiceHandle(m)
+	name, _ := windows.UTF16PtrFromString(serviceName)
+	h, err := windows.OpenService(m, name, windows.SERVICE_QUERY_STATUS)
 	if err != nil {
-		return "not installed"
+		if errors.Is(err, windows.ERROR_SERVICE_DOES_NOT_EXIST) {
+			return "not installed"
+		}
+		return "unknown (" + err.Error() + ")"
 	}
-	defer s.Close()
-	st, err := s.Query()
-	if err != nil {
+	defer windows.CloseServiceHandle(h)
+	var st windows.SERVICE_STATUS
+	if err := windows.QueryServiceStatus(h, &st); err != nil {
 		return "unknown"
 	}
-	names := map[svc.State]string{svc.Stopped: "stopped", svc.StartPending: "starting", svc.StopPending: "stopping",
-		svc.Running: "running", svc.ContinuePending: "resuming", svc.PausePending: "pausing", svc.Paused: "paused"}
-	return names[st.State]
+	names := map[uint32]string{windows.SERVICE_STOPPED: "stopped", windows.SERVICE_START_PENDING: "starting",
+		windows.SERVICE_STOP_PENDING: "stopping", windows.SERVICE_RUNNING: "running",
+		windows.SERVICE_CONTINUE_PENDING: "resuming", windows.SERVICE_PAUSE_PENDING: "pausing", windows.SERVICE_PAUSED: "paused"}
+	if n, ok := names[st.CurrentState]; ok {
+		return n
+	}
+	return "unknown"
 }
-
 func cmdFirewall(args []string, _ paths.Dirs) error {
 	if len(args) != 1 || (args[0] != "add" && args[0] != "remove") {
 		return errors.New("usage: homeserver firewall add|remove")
