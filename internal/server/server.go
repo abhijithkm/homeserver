@@ -27,6 +27,7 @@ import (
 	"github.com/abhijithkm/homeserver/internal/paths"
 	"github.com/abhijithkm/homeserver/internal/store"
 	"github.com/abhijithkm/homeserver/internal/tlsutil"
+	"github.com/abhijithkm/homeserver/internal/update"
 )
 
 // ErrRestart is returned by Run when an administrator requested a restart.
@@ -44,7 +45,8 @@ type Config struct {
 	Dirs    paths.Dirs
 	Version string
 	Log     *slog.Logger
-	Web     fs.FS // compiled frontend (index.html at root); may be nil
+	Web     fs.FS          // compiled frontend (index.html at root); may be nil
+	Updater *update.Client // release lookups; nil uses GitHub
 }
 
 // Server is the HomeServer HTTP server.
@@ -66,6 +68,11 @@ type Server struct {
 	bufPool     sync.Pool
 	tempCleaned sync.Map
 	handler     http.Handler
+
+	upMu   sync.Mutex
+	upInfo update.Info
+	upErr  string
+	upAt   time.Time
 }
 
 // New builds a server from persisted settings.
@@ -306,6 +313,7 @@ func (s *Server) routes() http.Handler {
 	mux.HandleFunc("GET /api/admin/logs", s.authed(true, s.handleLogs))
 	mux.HandleFunc("GET /api/admin/backup", s.authed(true, s.handleBackup))
 	mux.HandleFunc("POST /api/admin/restart", s.authed(true, s.handleRestart))
+	mux.HandleFunc("GET /api/admin/update", s.authed(true, s.handleUpdate))
 	mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) { httpErr(w, http.StatusNotFound, "not found") })
 	mux.HandleFunc("/", s.handleStatic)
 

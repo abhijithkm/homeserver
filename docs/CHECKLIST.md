@@ -16,6 +16,8 @@ Legend: [x] implemented and verified by an automated test or a recorded manual r
 - [~] Installer behaviour (service registration, firewall rule, upgrade over an older version, uninstall prompts): compiled with Inno Setup, **not run**
 - [~] Tray helper: starts and idles at ~18 MB; menu actions and UAC service control not exercised
 - [~] File upload through a phone browser's picker / iOS Safari: not tested on physical devices
+- [x] Update logic: version ordering, release selection, trusted-link check, checksum match/mismatch/missing, admin endpoint cache and opt-out (unit and server tests against a fake GitHub)
+- [~] `homeserver update` end to end against real GitHub Releases, the silent installer upgrade it launches, and the tray "Check for updates" item: **not run** (needs a newer published release and an elevated session)
 - [ ] mDNS discovery (not implemented)
 - [ ] Resumable chunked uploads (not implemented)
 - [ ] Per-user per-share ACLs (not implemented)

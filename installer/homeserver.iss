@@ -49,6 +49,9 @@ Filename: "{app}\homeserver.exe"; Parameters: "firewall add"; Flags: runhidden w
 Filename: "{app}\homeserver-tray.exe"; Flags: nowait postinstall skipifsilent runasoriginaluser; Description: "Start the tray icon now"; Tasks: tray
 Filename: "http://localhost:8686/"; Flags: shellexec postinstall skipifsilent runasoriginaluser; Description: "Open HomeServer to finish setup"
 
+[UninstallDelete]
+Type: filesandordirs; Name: "{app}\updates"
+
 [UninstallRun]
 Filename: "{app}\homeserver.exe"; Parameters: "uninstall"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveService"
 Filename: "{app}\homeserver.exe"; Parameters: "firewall remove"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveFirewall"

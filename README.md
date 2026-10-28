@@ -96,6 +96,7 @@ All from an administrator terminal in the install folder (`homeserver.exe <comma
 | `grant PATH [--readonly]` | give the service account access to a folder |
 | `set-password USER`, `set-port N` | account recovery / change port |
 | `backup FILE`, `restore FILE` | back up / restore configuration |
+| `update [--check] [--yes] [--pre]` | find, verify and install a newer GitHub release |
 
 Closing the tray icon, the browser or the management UI does not stop file sharing. If the service stops, the tray icon turns grey and says "Stopped".
 
@@ -126,7 +127,9 @@ See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md). Quick checks: `homeserve
 
 ## Updating
 
-Run the new installer over the old one. It stops the service, replaces the files, re-applies the service configuration and starts it again; settings, accounts and shares are preserved (the database schema migrates automatically; a database from a newer version is never touched by an older one).
+**From GitHub releases.** The Admin dashboard shows a notice when a newer release exists (Settings → Software updates controls this; pre-releases are opt-in). To install it, run `homeserver.exe update` in an administrator terminal (add `--check` to only look, `--pre` for pre-releases), or use the tray icon → **Check for updates...** (UAC prompt). The installer is downloaded from the release, its SHA-256 is verified against the release's `SHA256SUMS` file, and it then runs silently. Nothing is ever installed automatically, and the service itself never downloads or runs code. Limits: the checksum only detects corrupt downloads, and installers are not code-signed ([docs/SECURITY.md](docs/SECURITY.md#updates)).
+
+**Manually.** Run the new installer over the old one. It stops the service, replaces the files, re-applies the service configuration and starts it again; settings, accounts and shares are preserved (the database schema migrates automatically; a database from a newer version is never touched by an older one).
 
 ## Uninstalling
 

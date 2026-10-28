@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
 	"golang.org/x/sys/windows"
@@ -299,6 +300,15 @@ func serviceState() string {
 	}
 	return "unknown"
 }
+
+// launchInstaller starts the verified installer detached from this process, so
+// homeserver.exe is no longer running when Setup replaces it.
+func launchInstaller(path string) error {
+	cmd := exec.Command(path, "/SILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/CLOSEAPPLICATIONS")
+	cmd.SysProcAttr = &syscall.SysProcAttr{CreationFlags: windows.DETACHED_PROCESS | windows.CREATE_NEW_PROCESS_GROUP}
+	return cmd.Start()
+}
+
 func cmdFirewall(args []string, _ paths.Dirs) error {
 	if len(args) != 1 || (args[0] != "add" && args[0] != "remove") {
 		return errors.New("usage: homeserver firewall add|remove")

@@ -4,6 +4,11 @@ All notable changes to HomeServer are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- Update from GitHub releases: `homeserver update` (checksum-verified download, UAC, silent installer run), a tray menu item, and a dashboard notice with Settings to turn the check off or include pre-releases. Nothing installs automatically.
+
 ## [1.0.0] - Unreleased
 
 ### Added

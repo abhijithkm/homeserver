@@ -162,6 +162,26 @@ describe('dashboard', () => {
     expect(await screen.findByText('Photos/a.jpg')).toBeInTheDocument()
   })
 
+  it('announces an available update without offering to install it from the browser', async () => {
+    open('#/admin/dashboard', {
+      ...routes({ urls: [], addresses: [], port: 1, tls: false, listening: '' }),
+      'GET /api/admin/update': { json: { enabled: true, info: { current: '1.0.0-rc1', latest: '1.0.0', available: true, prerelease: false, pageUrl: 'https://github.com/x/y/releases/tag/v1.0.0', checkedAt: '2026-10-28T00:00:00Z' } } },
+    })
+    expect(await screen.findByText(/HomeServer 1\.0\.0/)).toBeInTheDocument()
+    expect(screen.getByText('homeserver update')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Release notes' })).toHaveAttribute('href', 'https://github.com/x/y/releases/tag/v1.0.0')
+    expect(screen.queryByRole('button', { name: /install/i })).not.toBeInTheDocument()
+  })
+
+  it('shows nothing about updates when checking is turned off', async () => {
+    open('#/admin/dashboard', {
+      ...routes({ urls: [], addresses: [], port: 1, tls: false, listening: '' }),
+      'GET /api/admin/update': { json: { enabled: false, current: '1.0.0' } },
+    })
+    await screen.findByText('1h 2m')
+    expect(screen.queryByText('homeserver update')).not.toBeInTheDocument()
+  })
+
   it('copies a URL to the clipboard', async () => {
     const writeText = vi.fn().mockResolvedValue(undefined)
     open('#/admin/dashboard', routes({ urls: ['http://192.168.1.10:8686'], addresses: [{ interface: 'Wi-Fi', ip: '192.168.1.10', private: true }], port: 8686, tls: false, listening: '' }))
@@ -188,7 +208,20 @@ describe('dashboard', () => {
 })
 
 describe('settings', () => {
-  const settings = { port: 8686, bindAddr: '0.0.0.0', maxUploadBytes: 2 * 1024 ** 3, maxTransfers: 16, sessionHours: 24, tlsMode: 'off', tlsCert: '', tlsKey: '' }
+  const settings = { port: 8686, bindAddr: '0.0.0.0', maxUploadBytes: 2 * 1024 ** 3, maxTransfers: 16, sessionHours: 24, tlsMode: 'off', tlsCert: '', tlsKey: '', updateCheck: true, updatePrerelease: false }
+
+  it('saves the software update options', async () => {
+    const m = open('#/admin/settings', {
+      'GET /api/admin/settings': { json: settings },
+      'PUT /api/admin/settings': (c) => ({ json: { settings: c.body, restartRequired: false } }),
+    })
+    const user = userEvent.setup()
+    await user.click(await screen.findByLabelText('Include pre-releases'))
+    await user.click(screen.getByRole('button', { name: 'Save settings' }))
+    await waitFor(() => expect(m.find('PUT', '/api/admin/settings')[0]?.body).toEqual({ ...settings, updatePrerelease: true }))
+    await user.click(screen.getByLabelText('Check GitHub for new versions'))
+    expect(screen.getByLabelText('Include pre-releases')).toBeDisabled()
+  })
 
   it('uses friendly units, saves, and shows restart required', async () => {
     const m = open('#/admin/settings', {

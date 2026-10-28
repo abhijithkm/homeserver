@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import * as api from './api'
-import type { NetworkInfo, Settings, Status, TransfersResponse } from './types'
+import type { NetworkInfo, Settings, Status, TransfersResponse, UpdateResult } from './types'
 import { formatBytes, formatUnix, formatUptime, joinBytes, splitBytes } from './format'
 import type { ByteUnit } from './format'
 import { ConfirmDialog, CopyButton, Empty, ErrorText, Notice, Spinner } from './ui'
@@ -104,13 +104,27 @@ function Dashboard() {
   const status = useLoad<Status>(api.getStatus)
   const net = useLoad<NetworkInfo>(api.getNetwork)
   const transfers = useLoad<TransfersResponse>(api.getTransfers)
+  const update = useLoad<UpdateResult>(api.getUpdate)
   const [sel, setSel] = useState(0)
   const s = status.data
   const urls = net.data?.urls ?? []
   const noNetwork = !!net.data && (net.data.addresses ?? []).length === 0
+  const up = update.data?.enabled ? update.data.info : undefined
 
   return (
     <div>
+      {up?.available ? (
+        <Notice kind="info">
+          <strong>HomeServer {up.latest}</strong> {up.prerelease ? '(pre-release) ' : ''}is available; this server runs {up.current}. To install it, open an
+          administrator terminal on the server computer and run <code>homeserver update</code>, or use the tray icon and choose &quot;Check for updates...&quot;.
+          The download is verified against the release checksum before it runs.{' '}
+          {up.pageUrl ? (
+            <a href={up.pageUrl} target="_blank" rel="noreferrer noopener">
+              Release notes
+            </a>
+          ) : null}
+        </Notice>
+      ) : null}
       {s && s.sharesUnavailable > 0 ? (
         <Notice kind="warn">
           {s.sharesUnavailable} shared {s.sharesUnavailable === 1 ? 'folder is' : 'folders are'} offline or not accessible. <a href="#/admin/shares">Check shares</a>
@@ -332,6 +346,18 @@ function SettingsAdmin({ tls }: { tls: boolean }) {
             <option value="selfsigned">Self-signed certificate</option>
             <option value="custom">My own certificate</option>
           </select>
+        </div>
+        <div>
+          <label htmlFor="s-upd">Software updates</label>
+          <label className="check">
+            <input id="s-upd" type="checkbox" checked={form.updateCheck} onChange={(e) => set('updateCheck', e.target.checked)} />
+            Check GitHub for new versions
+          </label>
+          <label className="check">
+            <input type="checkbox" checked={form.updatePrerelease} disabled={!form.updateCheck} onChange={(e) => set('updatePrerelease', e.target.checked)} />
+            Include pre-releases
+          </label>
+          <p className="hint">Only looks; it never installs by itself. This sends a request to github.com from the server computer.</p>
         </div>
       </div>
       {form.tlsMode === 'custom' && (

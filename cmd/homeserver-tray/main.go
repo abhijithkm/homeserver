@@ -71,9 +71,13 @@ func serverExe() string {
 
 // elevated runs "homeserver.exe <args>" with a UAC prompt (service control
 // needs administrator rights; the tray itself runs unprivileged).
-func elevated(args ...string) {
-	ps := fmt.Sprintf(`Start-Process -FilePath '%s' -ArgumentList '%s' -Verb RunAs -WindowStyle Hidden`,
-		strings.ReplaceAll(serverExe(), "'", "''"), strings.Join(args, " "))
+func elevated(args ...string) { runElevated("Hidden", args...) }
+
+// runElevated is elevated with a chosen window style; "Normal" lets the user
+// read and answer a console prompt (used for updates).
+func runElevated(style string, args ...string) {
+	ps := fmt.Sprintf(`Start-Process -FilePath '%s' -ArgumentList '%s' -Verb RunAs -WindowStyle %s`,
+		strings.ReplaceAll(serverExe(), "'", "''"), strings.Join(args, " "), style)
 	cmd := exec.Command("powershell", "-NoProfile", "-WindowStyle", "Hidden", "-Command", ps)
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	_ = cmd.Start()
@@ -154,6 +158,8 @@ func onReady() {
 	stop := systray.AddMenuItem("Stop service", "Requires administrator approval")
 	restart := systray.AddMenuItem("Restart service", "Requires administrator approval")
 	systray.AddSeparator()
+	upd := systray.AddMenuItem("Check for updates...", "Finds a newer GitHub release; asks before installing")
+	systray.AddSeparator()
 	quit := systray.AddMenuItem("Close this icon (sharing continues)", "The server keeps running")
 
 	var lastRunning *bool
@@ -200,6 +206,8 @@ func onReady() {
 				elevated("stop")
 			case <-restart.ClickedCh:
 				elevated("restart")
+			case <-upd.ClickedCh:
+				runElevated("Normal", "update", "--pause")
 			case <-quit.ClickedCh:
 				tick.Stop()
 				systray.Quit()

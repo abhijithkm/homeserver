@@ -15,11 +15,15 @@ type Settings struct {
 	TLSMode        string `json:"tlsMode"` // off | selfsigned | custom
 	TLSCert        string `json:"tlsCert"`
 	TLSKey         string `json:"tlsKey"`
+	// UpdateCheck lets the admin page ask GitHub whether a newer release exists.
+	// Nothing is downloaded or installed unless an administrator runs `homeserver update`.
+	UpdateCheck      bool `json:"updateCheck"`
+	UpdatePrerelease bool `json:"updatePrerelease"`
 }
 
 // DefaultSettings returns the factory defaults.
 func DefaultSettings() Settings {
-	return Settings{Port: 8686, BindAddr: "0.0.0.0", MaxTransfers: 16, SessionHours: 24, TLSMode: "off"}
+	return Settings{Port: 8686, BindAddr: "0.0.0.0", MaxTransfers: 16, SessionHours: 24, TLSMode: "off", UpdateCheck: true}
 }
 
 // Validate checks value ranges.
@@ -49,6 +53,13 @@ func (s Settings) Validate() error {
 		return fmt.Errorf("bindAddr required")
 	}
 	return nil
+}
+
+func boolStr(b bool) string {
+	if b {
+		return "1"
+	}
+	return "0"
 }
 
 // GetSettings loads settings, applying defaults for missing keys.
@@ -82,6 +93,10 @@ func (s *Store) GetSettings() (Settings, error) {
 			out.TLSCert = v
 		case "tlsKey":
 			out.TLSKey = v
+		case "updateCheck":
+			out.UpdateCheck = v == "1"
+		case "updatePrerelease":
+			out.UpdatePrerelease = v == "1"
 		}
 	}
 	return out, rows.Err()
@@ -97,6 +112,7 @@ func (s *Store) SaveSettings(v Settings) error {
 		"maxUploadBytes": strconv.FormatInt(v.MaxUploadBytes, 10),
 		"maxTransfers":   strconv.Itoa(v.MaxTransfers), "sessionHours": strconv.Itoa(v.SessionHours),
 		"tlsMode": v.TLSMode, "tlsCert": v.TLSCert, "tlsKey": v.TLSKey,
+		"updateCheck": boolStr(v.UpdateCheck), "updatePrerelease": boolStr(v.UpdatePrerelease),
 	}
 	tx, err := s.db.Begin()
 	if err != nil {

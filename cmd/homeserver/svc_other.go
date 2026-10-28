@@ -25,3 +25,6 @@ func serviceState() string                   { return "not supported on this OS"
 func firewallStatus() string                 { return "" }
 func cmdFirewall([]string, paths.Dirs) error { return errWindowsOnly }
 func cmdGrant([]string) error                { return errWindowsOnly }
+func needAdmin() error                       { return errWindowsOnly }
+func exePath() (string, error)               { return "", errWindowsOnly }
+func launchInstaller(string) error           { return errWindowsOnly }

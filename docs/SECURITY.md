@@ -33,6 +33,13 @@ HomeServer protects files on a **trusted home LAN** from: other devices on the L
 - The installer's firewall rule applies to **Private** profiles only. Never port-forward HomeServer.
 - Plain HTTP: credentials and files are readable by anyone who can sniff the network. Enable HTTPS in Settings (self-signed: a one-time browser warning is expected, and the warning also means you cannot distinguish a man-in-the-middle from your own server until you verify the certificate; custom certificate: provide PEM files readable by the service account).
 
+## Updates
+
+- The admin page (Settings → Software updates, on by default) asks `api.github.com` for the release list of `abhijithkm/homeserver`, at most every 6 hours, and only shows a notice. The service never downloads or runs anything.
+- `homeserver update` (administrator, UAC) downloads the installer only from `github.com/abhijithkm/homeserver/releases/download/...` over HTTPS (redirects must stay on GitHub hosts), compares its SHA-256 with the `SHA256SUMS*.txt` asset of the same release, deletes it on mismatch, and runs it. The installer is staged in `<install dir>\updates` (administrator-writable), not in the data folder that the service account can modify.
+- Limit: the checksum file comes from the same release as the installer, so it detects corrupted or truncated downloads but not a compromised GitHub account or release. Installers are not code-signed, so Windows SmartScreen will warn. Pre-releases are offered only to pre-release builds or when you opt in.
+- Turn the check off in Settings if the server must not contact the internet.
+
 ## Known limitations
 
 - The login rate limiter is in-memory per process (resets on restart).

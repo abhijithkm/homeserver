@@ -1,6 +1,6 @@
 import type {
   AuditEvent, Diagnose, ListResponse, NetworkInfo, Role, Session, Settings, Share, SetupStatus,
-  SortKey, Status, TransfersResponse, User,
+  SortKey, Status, TransfersResponse, UpdateResult, User,
 } from './types'
 
 export class ApiError extends Error {
@@ -187,7 +187,8 @@ export const qrUrl = (i: number) => `/api/qr.png?i=${i}`
 
 // ---- admin ----
 export const getStatus = () => get<Status>('/api/admin/status')
-export const getDiagnose = () => get<Diagnose>('/api/admin/diagnose')
+export const getUpdate = () => get<UpdateResult>('/api/admin/update')
+export const getDiagnose =() => get<Diagnose>('/api/admin/diagnose')
 export const getSettings = () => get<Settings>('/api/admin/settings')
 export const saveSettings = (s: Settings) =>
   request<{ settings: Settings; restartRequired: boolean }>('PUT', '/api/admin/settings', { body: s })

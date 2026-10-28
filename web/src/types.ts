@@ -60,6 +60,15 @@ export interface Settings {
   tlsMode: 'off' | 'selfsigned' | 'custom'
   tlsCert: string
   tlsKey: string
+  updateCheck: boolean
+  updatePrerelease: boolean
+}
+
+export interface UpdateResult {
+  enabled: boolean
+  current?: string
+  error?: string
+  info?: { current: string; latest: string; available: boolean; prerelease: boolean; pageUrl?: string; checkedAt: string }
 }
 
 export interface Status {

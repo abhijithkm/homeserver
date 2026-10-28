@@ -34,6 +34,8 @@ Maintenance:
   set-port N              change the listening port (restart service afterwards)
   backup FILE             write a consistent copy of the configuration database
   restore FILE            replace the configuration database (server must be stopped)
+  update [--check] [--yes] [--pre]
+                          find, verify and install a newer GitHub release (administrator)
   version
 `
 
@@ -101,6 +103,8 @@ func dispatch(cmd string, args []string, d paths.Dirs) error {
 		return cmdBackup(args, d)
 	case "restore":
 		return cmdRestore(args, d)
+	case "update":
+		return cmdUpdate(args, d)
 	}
 	fmt.Fprintf(os.Stderr, usage, version)
 	return fmt.Errorf("unknown command %q", cmd)
