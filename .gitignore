@@ -1,0 +1,24 @@
+# build output
+/dist/
+/release/
+*.exe
+*.test
+*.out
+# local data
+*.db
+*.db-wal
+*.db-shm
+*.log
+.env
+.env.*
+*.pem
+*.key
+# frontend
+web/node_modules/
+web/dist/*
+!web/dist/.gitkeep
+web/coverage/
+# editor
+.vscode/
+.idea/
+.claude/
