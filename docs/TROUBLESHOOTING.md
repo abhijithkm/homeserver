@@ -17,7 +17,9 @@ Start with `homeserver.exe status`, `homeserver.exe diagnose` and **Admin → Di
 | Forgot the admin password | — | On the server (administrator): `homeserver.exe set-password admin` |
 | "database was corrupt" in the log | Disk error or manual damage | The bad file was kept as `homeserver.db.corrupt-<time>`; restore a backup with `homeserver.exe restore FILE` |
 | Browser warns about the certificate | Self-signed HTTPS | Expected; accept once per device or supply your own certificate |
-| Tray icon is grey | Service stopped | Right-click → Start service (UAC prompt) or `homeserver.exe start` |
+| Tray icon has a red square | Service stopped | Right-click → Start service (UAC prompt) or `homeserver.exe start` |
+| Tray icon has an orange `!` | Service is running but `/healthz` does not answer (a custom port is probed only if the tray can read `runtime.json`; otherwise 8686) | `homeserver.exe diagnose`, `homeserver.exe logs` |
+| Tray icon has a grey dash | Service not installed | Run the installer, or `homeserver.exe install` as administrator |
 
 ## Checking the port by hand
 

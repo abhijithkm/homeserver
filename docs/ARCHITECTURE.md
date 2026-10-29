@@ -5,7 +5,7 @@
 | Component | Location | Role |
 |---|---|---|
 | Server + CLI | `cmd/homeserver` | HTTP server, Windows service host, admin CLI |
-| Tray helper | `cmd/homeserver-tray` | Optional status icon; polls `runtime.json` + `/healthz`; service control via UAC. Never required by the server |
+| Tray helper | `cmd/homeserver-tray` | Optional status icon (running / starting-stopping / stopped / not answering / not installed); reads the service state from the Windows service manager (no admin rights needed) and probes `/healthz` (port from `runtime.json` when readable, else 8686); service control via UAC. Never required by the server |
 | HTTP API/UI | `internal/server` | Routing, auth middleware, handlers, static UI |
 | Filesystem layer | `internal/fsx` | All access to shared folders |
 | Store | `internal/store` | SQLite: settings, users, sessions, shares, audit, transfers |

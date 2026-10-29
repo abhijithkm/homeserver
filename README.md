@@ -98,7 +98,7 @@ All from an administrator terminal in the install folder (`homeserver.exe <comma
 | `backup FILE`, `restore FILE` | back up / restore configuration |
 | `update [--check] [--yes] [--pre]` | find, verify and install a newer GitHub release |
 
-Closing the tray icon, the browser or the management UI does not stop file sharing. If the service stops, the tray icon turns grey and says "Stopped".
+Closing the tray icon, the browser or the management UI does not stop file sharing. The tray icon shows the server state: green tick (running), amber dots (starting or stopping), red square (stopped), orange `!` (service running but not answering), grey dash (not installed). Hover for the text.
 
 ## Firewall
 
