@@ -4,6 +4,7 @@ import * as api from './api'
 import type { Role, Share, User } from './types'
 import { formatUnix } from './format'
 import { ConfirmDialog, Empty, ErrorText, Notice, PromptDialog, Spinner } from './ui'
+import { FolderPicker } from './FolderPicker'
 import { ShareBadges, shareProblemText } from './Files'
 import { useLoad } from './useLoad'
 
@@ -13,6 +14,7 @@ export function SharesAdmin() {
   const load = useLoad<Share[]>(api.listShares)
   const [name, setName] = useState('')
   const [path, setPath] = useState('')
+  const [picking, setPicking] = useState(false)
   const [readOnly, setReadOnly] = useState(true)
   const [addError, setAddError] = useState('')
   const [adding, setAdding] = useState(false)
@@ -35,6 +37,14 @@ export function SharesAdmin() {
       setAddError(err instanceof Error ? err.message : 'Could not add the share.')
     }
     setAdding(false)
+  }
+
+  const pick = (p: string) => {
+    setPath(p)
+    // Suggest the folder's own name when none was typed ("D:\" gives "D").
+    const last = p.replace(/[\\/]+$/, '').split(/[\\/]/).pop() ?? ''
+    if (!name.trim() && last) setName(last.replace(':', '').slice(0, 64))
+    setPicking(false)
   }
 
   const patch = async (s: Share, p: { readOnly?: boolean; enabled?: boolean }) => {
@@ -77,7 +87,12 @@ export function SharesAdmin() {
           </div>
           <div>
             <label htmlFor="sh-path">Folder path on the server</label>
-            <input id="sh-path" value={path} onChange={(e) => setPath(e.target.value)} placeholder="D:\Photos" required spellCheck={false} />
+            <div className="input-row">
+              <input id="sh-path" value={path} onChange={(e) => setPath(e.target.value)} placeholder="D:\Photos" required spellCheck={false} />
+              <button type="button" className="btn" onClick={() => setPicking(true)}>
+                Browse...
+              </button>
+            </div>
           </div>
         </div>
         <label className="check">
@@ -89,6 +104,8 @@ export function SharesAdmin() {
           {adding ? 'Adding...' : 'Add share'}
         </button>
       </form>
+
+      {picking && <FolderPicker initial={path} onPick={pick} onCancel={() => setPicking(false)} />}
 
       <h2>Shared folders</h2>
       <ErrorText>{load.error || rowError}</ErrorText>

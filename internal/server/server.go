@@ -314,6 +314,7 @@ func (s *Server) routes() http.Handler {
 	mux.HandleFunc("GET /api/admin/backup", s.authed(true, s.handleBackup))
 	mux.HandleFunc("POST /api/admin/restart", s.authed(true, s.handleRestart))
 	mux.HandleFunc("GET /api/admin/update", s.authed(true, s.handleUpdate))
+	mux.HandleFunc("GET /api/admin/browse", s.authed(true, s.handleBrowse))
 	mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) { httpErr(w, http.StatusNotFound, "not found") })
 	mux.HandleFunc("/", s.handleStatic)
 

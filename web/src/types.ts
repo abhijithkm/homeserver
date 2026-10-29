@@ -71,6 +71,20 @@ export interface UpdateResult {
   info?: { current: string; latest: string; available: boolean; prerelease: boolean; pageUrl?: string; checkedAt: string }
 }
 
+export interface BrowseEntry {
+  name: string
+  path: string
+  readable: boolean
+}
+
+/** A server folder listing; path "" is the list of drives. */
+export interface BrowseResult {
+  path: string
+  parent: string
+  entries: BrowseEntry[]
+  truncated?: boolean
+}
+
 export interface Status {
   version: string
   uptimeSeconds: number

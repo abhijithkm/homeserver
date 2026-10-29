@@ -1,5 +1,5 @@
 import type {
-  AuditEvent, Diagnose, ListResponse, NetworkInfo, Role, Session, Settings, Share, SetupStatus,
+  AuditEvent, BrowseResult, Diagnose, ListResponse, NetworkInfo, Role, Session, Settings, Share, SetupStatus,
   SortKey, Status, TransfersResponse, UpdateResult, User,
 } from './types'
 
@@ -188,6 +188,7 @@ export const qrUrl = (i: number) => `/api/qr.png?i=${i}`
 // ---- admin ----
 export const getStatus = () => get<Status>('/api/admin/status')
 export const getUpdate = () => get<UpdateResult>('/api/admin/update')
+export const browse = (path: string) => get<BrowseResult>('/api/admin/browse' + q({ path }))
 export const getDiagnose =() => get<Diagnose>('/api/admin/diagnose')
 export const getSettings = () => get<Settings>('/api/admin/settings')
 export const saveSettings = (s: Settings) =>

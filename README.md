@@ -45,7 +45,7 @@ homeserver.exe firewall add
 
 1. On the server laptop open <http://localhost:8686>.
 2. Create the administrator account (first-run setup works **only from the server computer itself**, so nobody on the LAN can claim an unconfigured server). Headless alternative: `homeserver set-password admin`.
-3. Go to **Admin → Shares → Add share**, enter a name and the folder path (for example `D:\Photos`), keep **read-only** on unless people should be able to upload, and save.
+3. Go to **Admin → Shares → Add share**, click **Browse...** and pick the folder (or type its path, for example `D:\Photos`), keep **read-only** on unless people should be able to upload, and save. The picker lists the server's drives and folders and works from a phone too. Folders marked *(no access)* cannot be read by the service account yet; see the next section.
 
 ### Folder permissions for the service account
 

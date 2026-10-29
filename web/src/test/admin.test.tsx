@@ -34,6 +34,48 @@ describe('share management', () => {
     expect(m.find('POST', '/api/shares')[0].body).toEqual({ name: 'Music', path: 'D:\\Music', readOnly: true })
   })
 
+  it('picks a folder with Browse instead of typing the path', async () => {
+    const tree: Record<string, object> = {
+      '': { path: '', parent: '', entries: [{ name: 'D:\\', path: 'D:\\', readable: true }] },
+      'D:\\': { path: 'D:\\', parent: '', entries: [{ name: 'Photos', path: 'D:\\Photos', readable: true }, { name: 'Private', path: 'D:\\Private', readable: false }] },
+      'D:\\Photos': { path: 'D:\\Photos', parent: 'D:\\', entries: [] },
+    }
+    const m = open('#/admin/shares', {
+      'GET /api/shares': { json: [] },
+      'GET /api/admin/browse': (c) => ({ json: tree[c.query.get('path') ?? ''] }),
+      'POST /api/shares': { status: 201, json: share({ id: 's9', name: 'Photos' }) },
+    })
+    const user = userEvent.setup()
+    await screen.findByText('No folders are shared yet.')
+    await user.click(screen.getByRole('button', { name: 'Browse...' }))
+    const dlg = await screen.findByRole('dialog', { name: 'Choose a folder' })
+    expect(within(dlg).getByRole('button', { name: 'Use this folder' })).toBeDisabled() // drive list: nothing to pick yet
+    await user.click(await within(dlg).findByRole('button', { name: 'D:\\' }))
+    expect(await within(dlg).findByRole('button', { name: /Private/ })).toBeDisabled()
+    await user.click(within(dlg).getByRole('button', { name: 'Photos' }))
+    await within(dlg).findByText('No sub-folders here.')
+    await user.click(within(dlg).getByRole('button', { name: 'Use this folder' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Folder path on the server')).toHaveValue('D:\\Photos')
+    expect(screen.getByLabelText('Name')).toHaveValue('Photos') // suggested from the folder name
+    await user.click(screen.getByRole('button', { name: 'Add share' }))
+    await waitFor(() => expect(m.find('POST', '/api/shares')[0]?.body).toEqual({ name: 'Photos', path: 'D:\\Photos', readOnly: true }))
+  })
+
+  it('falls back to the drive list when the typed path cannot be opened', async () => {
+    const m = open('#/admin/shares', {
+      'GET /api/shares': { json: [] },
+      'GET /api/admin/browse': (c) =>
+        c.query.get('path') ? { status: 404, json: { error: 'folder does not exist' } } : { json: { path: '', parent: '', entries: [{ name: 'C:\\', path: 'C:\\', readable: true }] } },
+    })
+    const user = userEvent.setup()
+    await screen.findByText('No folders are shared yet.')
+    await user.type(screen.getByLabelText('Folder path on the server'), 'Z:\\typo')
+    await user.click(screen.getByRole('button', { name: 'Browse...' }))
+    expect(await screen.findByRole('button', { name: 'C:\\' })).toBeInTheDocument()
+    expect(m.find('GET', '/api/admin/browse')).toHaveLength(2)
+  })
+
   it('shows the server error when adding fails', async () => {
     open('#/admin/shares', {
       'GET /api/shares': { json: [] },
