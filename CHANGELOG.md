@@ -10,6 +10,8 @@ All notable changes to HomeServer are documented here. The format follows
 - Update from GitHub releases: `homeserver update` (checksum-verified download, UAC, silent installer run), a tray menu item, and a dashboard notice with Settings to turn the check off or include pre-releases. Nothing installs automatically.
 - Tray icon now has a distinct icon per state: running, starting/stopping, stopped, not answering, not installed.
 
+- Installer task (on by default) adds the install folder to the system PATH; the entry is removed on uninstall and never duplicated on upgrade.
+
 ### Fixed
 - Tray status no longer depends on reading `runtime.json` from the administrator-only data folder; it asks the Windows service manager for the state and probes the default port.
 

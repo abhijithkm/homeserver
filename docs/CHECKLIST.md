@@ -14,6 +14,7 @@ Legend: [x] implemented and verified by an automated test or a recorded manual r
 - [x] Installer, portable zip and build script produce artifacts; built server passes the smoke test
 - [~] Windows service install/start/stop/recovery/uninstall (`svc_windows.go`): compiles and `status`/non-admin refusal were run, but the build session was not elevated, so installing the real service was **not** exercised
 - [~] Installer behaviour (service registration, firewall rule, upgrade over an older version, uninstall prompts): compiled with Inno Setup, **not run**
+- [~] Installer adds its folder to the system PATH (default-on task, no duplicates, removed on uninstall): the script compiles, but the installer was **not run**, so the registry edit and its removal are unverified
 - [~] Tray helper: starts and idles at ~18 MB; menu actions and UAC service control not exercised
 - [~] File upload through a phone browser's picker / iOS Safari: not tested on physical devices
 - [x] Update logic: version ordering, release selection, trusted-link check, checksum match/mismatch/missing, admin endpoint cache and opt-out (unit and server tests against a fake GitHub)

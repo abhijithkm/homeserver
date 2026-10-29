@@ -28,8 +28,11 @@ UninstallDisplayName=HomeServer
 LicenseFile=..\LICENSE
 CloseApplications=yes
 RestartApplications=no
+; Broadcast the PATH change so new terminals see it without a sign-out.
+ChangesEnvironment=yes
 
 [Tasks]
+Name: "addtopath"; Description: "Add HomeServer to the system PATH (so you can run ""homeserver"" from any terminal)"; GroupDescription: "Convenience:"
 Name: "firewall"; Description: "Allow other devices on my home network to connect (adds a Windows Firewall rule for Private networks only)"; GroupDescription: "Network access:"
 Name: "tray"; Description: "Show a tray icon with server status when I sign in (optional, uses about 20 MB of RAM)"; GroupDescription: "Convenience:"; Flags: unchecked
 
@@ -38,6 +41,9 @@ Source: "{#SourceDir}\homeserver.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\homeserver-tray.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
+
+[Registry]
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}"; Tasks: addtopath; Check: NeedsAddPath
 
 [Icons]
 Name: "{group}\HomeServer tray"; Filename: "{app}\homeserver-tray.exe"
@@ -57,6 +63,40 @@ Filename: "{app}\homeserver.exe"; Parameters: "uninstall"; Flags: runhidden wait
 Filename: "{app}\homeserver.exe"; Parameters: "firewall remove"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveFirewall"
 
 [Code]
+const
+  EnvKey = 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment';
+
+// True when the install folder is not yet in the system PATH (no duplicates on upgrade).
+function NeedsAddPath: Boolean;
+var
+  paths, dir: String;
+begin
+  if not RegQueryStringValue(HKLM, EnvKey, 'Path', paths) then
+    paths := '';
+  dir := ExpandConstant('{app}');
+  paths := ';' + Lowercase(paths) + ';';
+  Result := (Pos(';' + Lowercase(dir) + ';', paths) = 0) and
+            (Pos(';' + Lowercase(dir) + '\;', paths) = 0);
+end;
+
+// Removes the install folder from the system PATH, leaving every other entry untouched.
+procedure RemoveFromPath;
+var
+  paths, dir: String;
+begin
+  if not RegQueryStringValue(HKLM, EnvKey, 'Path', paths) then
+    Exit;
+  dir := ExpandConstant('{app}');
+  paths := ';' + paths + ';';
+  while StringChangeEx(paths, ';' + dir + ';', ';', True) > 0 do;
+  while StringChangeEx(paths, ';' + dir + '\;', ';', True) > 0 do;
+  if (Length(paths) > 0) and (paths[1] = ';') then
+    Delete(paths, 1, 1);
+  if (Length(paths) > 0) and (paths[Length(paths)] = ';') then
+    Delete(paths, Length(paths), 1);
+  RegWriteExpandStringValue(HKLM, EnvKey, 'Path', paths);
+end;
+
 function InitializeSetup(): Boolean;
 var
   rc: Integer;
@@ -72,6 +112,8 @@ var
   dataDir: String;
   rc: Integer;
 begin
+  if CurUninstallStep = usUninstall then
+    RemoveFromPath;
   if CurUninstallStep = usPostUninstall then
   begin
     dataDir := ExpandConstant('{commonappdata}\HomeServer');

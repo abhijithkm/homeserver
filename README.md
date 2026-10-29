@@ -31,7 +31,7 @@ Dependencies (Go): `modernc.org/sqlite` (pure Go, no C compiler), `golang.org/x/
 ## Installation
 
 1. Download `HomeServer-Setup-<version>.exe` from the [Releases](https://github.com/abhijithkm/homeserver/releases) page and run it (administrator approval is required to register the service).
-2. Keep **Allow other devices on my home network** ticked: it adds a Windows Firewall rule scoped to **Private** networks only.
+2. Keep **Allow other devices on my home network** ticked: it adds a Windows Firewall rule scoped to **Private** networks only. Keep **Add HomeServer to the system PATH** ticked to run `homeserver` from any terminal (open a new terminal after installing; uninstalling removes the entry).
 3. When it finishes, the service is installed (automatic start, delayed) and running.
 
 Prefer the command line or the portable zip? Extract it somewhere permanent (for example `C:\Program Files\HomeServer`) and from an **administrator** terminal run:
