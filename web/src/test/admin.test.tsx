@@ -51,7 +51,7 @@ describe('share management', () => {
     const dlg = await screen.findByRole('dialog', { name: 'Choose a folder' })
     expect(within(dlg).getByRole('button', { name: 'Use this folder' })).toBeDisabled() // drive list: nothing to pick yet
     await user.click(await within(dlg).findByRole('button', { name: 'D:\\' }))
-    expect(await within(dlg).findByRole('button', { name: /Private/ })).toBeDisabled()
+    expect(await within(dlg).findByRole('button', { name: /^Private/ })).toBeDisabled()
     await user.click(within(dlg).getByRole('button', { name: 'Photos' }))
     await within(dlg).findByText('No sub-folders here.')
     await user.click(within(dlg).getByRole('button', { name: 'Use this folder' }))
@@ -60,6 +60,44 @@ describe('share management', () => {
     expect(screen.getByLabelText('Name')).toHaveValue('Photos') // suggested from the folder name
     await user.click(screen.getByRole('button', { name: 'Add share' }))
     await waitFor(() => expect(m.find('POST', '/api/shares')[0]?.body).toEqual({ name: 'Photos', path: 'D:\\Photos', readOnly: true }))
+  })
+
+  it('offers a copyable grant command when the folder cannot be read', async () => {
+    open('#/admin/shares', {
+      'GET /api/shares': { json: [] },
+      'POST /api/shares': {
+        status: 400,
+        json: { error: 'the HomeServer service account cannot read this folder. In an administrator terminal run: homeserver.exe grant "C:\\Users\\me\\Downloads" (add --readonly for a read-only share), then add the share again' },
+      },
+    })
+    const user = userEvent.setup()
+    await screen.findByText('No folders are shared yet.')
+    await user.type(screen.getByLabelText('Name'), 'Downloads')
+    await user.type(screen.getByLabelText('Folder path on the server'), 'C:\\Users\\me\\Downloads')
+    await user.click(screen.getByRole('button', { name: 'Add share' }))
+    // Read-only is ticked, so the copied command carries --readonly; the tray alternative is mentioned.
+    const copy = await screen.findByRole('button', { name: 'Copy command homeserver.exe grant "C:\\Users\\me\\Downloads" --readonly' })
+    expect(copy).toBeInTheDocument()
+    expect(screen.getByText('Grant folder access...')).toBeInTheDocument()
+    await user.click(screen.getByLabelText(/^Read-only/)) // now read-write: no --readonly
+    expect(screen.getByRole('button', { name: 'Copy command homeserver.exe grant "C:\\Users\\me\\Downloads"' })).toBeInTheDocument()
+  })
+
+  it('offers a grant command for folders marked no access in the picker', async () => {
+    open('#/admin/shares', {
+      'GET /api/shares': { json: [] },
+      'GET /api/admin/browse': {
+        json: { path: 'C:\\Users\\me', parent: 'C:\\Users', entries: [{ name: 'Downloads', path: 'C:\\Users\\me\\Downloads', readable: false }, { name: 'Open', path: 'C:\\Users\\me\\Open', readable: true }] },
+      },
+    })
+    const user = userEvent.setup()
+    await screen.findByText('No folders are shared yet.')
+    await user.type(screen.getByLabelText('Folder path on the server'), 'C:\\Users\\me')
+    await user.click(screen.getByRole('button', { name: 'Browse...' }))
+    const dlg = await screen.findByRole('dialog', { name: 'Choose a folder' })
+    expect(await within(dlg).findByRole('button', { name: /^Downloads/ })).toBeDisabled()
+    expect(within(dlg).getAllByRole('button', { name: /Copy grant command/ })).toHaveLength(1) // only the unreadable folder
+    expect(within(dlg).getByRole('button', { name: 'Copy grant command homeserver.exe grant "C:\\Users\\me\\Downloads" --readonly' })).toBeInTheDocument()
   })
 
   it('falls back to the drive list when the typed path cannot be opened', async () => {

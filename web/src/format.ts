@@ -59,6 +59,16 @@ export function parentPath(p: string): string {
   return i < 0 ? '' : p.slice(0, i)
 }
 
+/** The command that lets the service account read a folder (run it as administrator). */
+export function grantCommand(path: string, readOnly: boolean): string {
+  return `homeserver.exe grant "${path}"${readOnly ? ' --readonly' : ''}`
+}
+
+/** The folder named in a server message such as: run: homeserver.exe grant "D:\Photos" ... (or '' if none). */
+export function grantPathFromError(message: string): string {
+  return /homeserver\.exe grant "([^"]+)"/.exec(message)?.[1] ?? ''
+}
+
 const PREVIEW = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'mp4', 'webm', 'mp3', 'ogg', 'wav', 'm4a', 'pdf'])
 export function canPreview(type: string): boolean {
   return PREVIEW.has(type.toLowerCase())

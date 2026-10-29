@@ -9,7 +9,7 @@ Start with `homeserver.exe status`, `homeserver.exe diagnose` and **Admin → Di
 | Works on the server but not from other devices | Router AP/client isolation, guest Wi-Fi, different subnet/VLAN | Connect both to the same normal Wi-Fi; disable client isolation |
 | Address changed after reboot | DHCP gave a new IP | Reserve the laptop's address in the router; re-scan the QR code |
 | Service will not start / "port is already in use" | Another program uses the port | `homeserver.exe set-port 8787`, `homeserver.exe restart`, `homeserver.exe firewall add` |
-| Adding a share fails with "cannot read this folder" | The service account (LocalService) has no access to it, typical for folders under `C:\Users\<you>` | `homeserver.exe grant "C:\Users\you\Downloads"` in an administrator terminal (add `--readonly` for a read-only share), then add the share again |
+| Adding a share fails with "cannot read this folder" | The service account (LocalService) has no access to it, typical for folders under `C:\Users\<you>` | Tray icon → **Grant folder access...** (no administrator prompt for your own folders), or paste the command from the **Copy command** button: `homeserver.exe grant "C:\Users\you\Downloads"` (add `--readonly` for a read-only share), then add the share again |
 | Share shows **denied** | Service account (LocalService) cannot read the folder | `homeserver.exe grant "D:\Folder"` (administrator) or reinstall with `--account` |
 | Share shows **offline** | Drive disconnected or folder renamed/deleted | Reconnect the drive; it recovers automatically. If the folder was renamed, remove and re-add the share |
 | Upload fails with 507 | Server disk full | Free space on the drive holding the share (Diagnostics shows free space) |

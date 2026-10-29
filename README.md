@@ -49,7 +49,7 @@ homeserver.exe firewall add
 
 ### Folder permissions for the service account
 
-By default the service runs as `NT AUTHORITY\LocalService` (least privilege). It can only read folders it has been granted access to. If a share shows *denied*, run in an administrator terminal:
+By default the service runs as `NT AUTHORITY\LocalService` (least privilege). It can only read folders it has been granted access to. The easiest way to grant access is the tray icon: **Grant folder access...** opens a folder dialog and asks whether HomeServer may read only or also change files. For a folder you own (such as your `Downloads`) no administrator prompt is needed; for any other folder Windows asks for approval. When adding a share fails because the folder cannot be read, the web page shows a **Copy command** button with the exact command, as does the folder picker for folders marked *(no access)*. The command itself, run in a terminal, is:
 
 ```
 homeserver.exe grant "D:\Photos"             :: read + write

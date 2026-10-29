@@ -11,6 +11,8 @@ All notable changes to HomeServer are documented here. The format follows
 - Tray icon now has a distinct icon per state: running, starting/stopping, stopped, not answering, not installed.
 
 - Add share has a **Browse...** folder picker (admin only) that lists the server's drives and folders, so the path no longer has to be typed. Hidden/system folders, links and junctions are not listed; folders the service account cannot read are shown as "(no access)".
+- Tray menu **Grant folder access...**: choose a folder in the Windows dialog, pick read-only or read/write, and HomeServer's service account is granted access. Folders you own need no administrator prompt; otherwise Windows asks for approval (UAC). `homeserver.exe grant` itself no longer requires an elevated terminal when you own the folder, refuses whole drives, and has a `--pause` flag.
+- **Copy command** button for the exact `grant` command in the Add share error and for "(no access)" folders in the folder picker.
 - Installer task (on by default) adds the install folder to the system PATH; the entry is removed on uninstall and never duplicated on upgrade.
 
 ### Fixed

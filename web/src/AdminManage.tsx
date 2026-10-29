@@ -2,8 +2,8 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import * as api from './api'
 import type { Role, Share, User } from './types'
-import { formatUnix } from './format'
-import { ConfirmDialog, Empty, ErrorText, Notice, PromptDialog, Spinner } from './ui'
+import { formatUnix, grantCommand, grantPathFromError } from './format'
+import { ConfirmDialog, CopyButton, Empty, ErrorText, Notice, PromptDialog, Spinner } from './ui'
 import { FolderPicker } from './FolderPicker'
 import { ShareBadges, shareProblemText } from './Files'
 import { useLoad } from './useLoad'
@@ -100,12 +100,18 @@ export function SharesAdmin() {
           Read-only (people can browse and download but not change anything)
         </label>
         <ErrorText>{addError}</ErrorText>
+        {grantPathFromError(addError) ? (
+          <p className="grant-hint">
+            Run this in an administrator terminal, or use the tray icon: <strong>Grant folder access...</strong>{' '}
+            <CopyButton text={grantCommand(grantPathFromError(addError), readOnly)} label="Copy command" />
+          </p>
+        ) : null}
         <button type="submit" className="btn btn-primary" disabled={adding}>
           {adding ? 'Adding...' : 'Add share'}
         </button>
       </form>
 
-      {picking && <FolderPicker initial={path} onPick={pick} onCancel={() => setPicking(false)} />}
+      {picking && <FolderPicker initial={path} readOnly={readOnly} onPick={pick} onCancel={() => setPicking(false)} />}
 
       <h2>Shared folders</h2>
       <ErrorText>{load.error || rowError}</ErrorText>

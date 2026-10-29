@@ -86,11 +86,18 @@ func elevated(args ...string) { runElevated("Hidden", args...) }
 // runElevated is elevated with a chosen window style; "Normal" lets the user
 // read and answer a console prompt (used for updates).
 func runElevated(style string, args ...string) {
-	ps := fmt.Sprintf(`Start-Process -FilePath '%s' -ArgumentList '%s' -Verb RunAs -WindowStyle %s`,
-		strings.ReplaceAll(serverExe(), "'", "''"), strings.Join(args, " "), style)
-	cmd := exec.Command("powershell", "-NoProfile", "-WindowStyle", "Hidden", "-Command", ps)
+	cmd := exec.Command("powershell", "-NoProfile", "-WindowStyle", "Hidden", "-Command", elevatedCommand(serverExe(), style, args...))
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
 	_ = cmd.Start()
+}
+
+// elevatedCommand is the PowerShell that starts exe with args under a UAC
+// prompt. Single quotes are doubled so a folder name cannot break out of the
+// quoted strings.
+func elevatedCommand(exe, style string, args ...string) string {
+	q := func(s string) string { return strings.ReplaceAll(s, "'", "''") }
+	return fmt.Sprintf(`Start-Process -FilePath '%s' -ArgumentList '%s' -Verb RunAs -WindowStyle %s`,
+		q(exe), q(strings.Join(args, " ")), style)
 }
 
 func openBrowser(url string) {
@@ -119,6 +126,7 @@ func onReady() {
 	status.Disable()
 	open := systray.AddMenuItem("Open HomeServer", "Open the web interface")
 	copyAddr := systray.AddMenuItem("Copy network address", "Copy the address for other devices")
+	grant := systray.AddMenuItem("Grant folder access...", "Let HomeServer read a folder (needed before sharing it)")
 	systray.AddSeparator()
 	start := systray.AddMenuItem("Start service", "Requires administrator approval")
 	stop := systray.AddMenuItem("Stop service", "Requires administrator approval")
@@ -175,6 +183,8 @@ func onReady() {
 				if ri, ok := readRuntime(); ok && len(ri.URLs) > 0 {
 					copyText(ri.URLs[0])
 				}
+			case <-grant.ClickedCh:
+				go grantFolderAccess() // shows dialogs; must not block the status loop
 			case <-start.ClickedCh:
 				elevated("start")
 			case <-stop.ClickedCh:

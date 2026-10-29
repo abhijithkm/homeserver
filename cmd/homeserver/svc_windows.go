@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"crypto/tls"
 	"errors"
@@ -348,6 +349,7 @@ func cmdGrant(args []string) error {
 	fs := flag.NewFlagSet("grant", flag.ExitOnError)
 	ro := fs.Bool("readonly", false, "grant read access only")
 	account := fs.String("account", defaultAccount, "service account")
+	pause := fs.Bool("pause", false, "wait for Enter before exiting (used by the tray icon)")
 	var path string
 	var rest []string
 	for _, a := range args { // allow the path before or after flags
@@ -358,20 +360,35 @@ func cmdGrant(args []string) error {
 		}
 	}
 	_ = fs.Parse(rest)
+	if *pause {
+		defer func() {
+			fmt.Print("\nPress Enter to close...")
+			_, _ = bufio.NewReader(os.Stdin).ReadString('\n')
+		}()
+	}
 	if path == "" {
 		return errors.New(`usage: homeserver grant PATH [--readonly] [--account "NT AUTHORITY\LocalService"]`)
 	}
-	if err := needAdmin(); err != nil {
+	abs, err := filepath.Abs(path)
+	if err != nil {
 		return err
+	}
+	if filepath.Dir(abs) == abs {
+		return errors.New("refusing to grant access to a whole drive; choose a folder")
 	}
 	perm, word := "M", "modify"
 	if *ro {
 		perm, word = "RX", "read"
 	}
-	out, err := run("icacls", path, "/grant", fmt.Sprintf("%s:(OI)(CI)%s", *account, perm))
+	// No administrator check up front: Windows lets a folder's owner change its
+	// permissions, so granting access to your own folder needs no elevation.
+	out, err := run("icacls", abs, "/grant", fmt.Sprintf("%s:(OI)(CI)%s", *account, perm))
 	if err != nil {
+		if strings.Contains(strings.ToLower(out), "access is denied") {
+			return fmt.Errorf("access denied changing permissions on %s: only its owner or an administrator can grant access; run this in an administrator terminal", abs)
+		}
 		return fmt.Errorf("icacls failed: %v: %s", err, out)
 	}
-	fmt.Printf("Granted %s access to %s for %s.\n", word, path, *account)
+	fmt.Printf("Granted %s access to %s for %s.\n", word, abs, *account)
 	return nil
 }
