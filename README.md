@@ -68,6 +68,8 @@ Admin → Shares. You can rename, enable/disable, switch read-only/read-write an
 2. On the server open **Admin → Dashboard** and scan the **QR code** with the phone camera, or type the address shown (for example `http://192.168.1.20:8686`).
 3. Sign in, pick a share, then upload from the phone's file picker or download files. Tip: give the server laptop a DHCP reservation in your router so its address does not change.
 
+On **Android**, if the page will not load (even though the laptop and other devices can open it), open Settings → Apps → your browser → Permissions and set **Nearby devices** (or **Local network**) to **Allow**, then reopen the browser. Newer Android versions block browsers from local-network devices until this is allowed.
+
 Plain `http://` is not encrypted; see [HTTPS](#https-and-security-limits).
 
 ## Accounts and permissions

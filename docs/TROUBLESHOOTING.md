@@ -5,9 +5,11 @@ Start with `homeserver.exe status`, `homeserver.exe diagnose` and **Admin → Di
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | Phone cannot open the address | Firewall rule missing or network profile is Public | `homeserver.exe firewall add` (administrator); set the Wi-Fi network to **Private** |
+| Android phone cannot open the address (or even the router page, e.g. `192.168.1.1`); Chrome shows `ERR_TOO_MANY_RETRIES` or "This site can't be reached" while the laptop and other devices work | Android blocks the browser from reaching devices on your Wi-Fi until it has the local-network permission | Settings → Apps → your browser → Permissions → **Nearby devices** (or **Local network**) → **Allow**, then close and reopen the browser |
 | Works on the server but not from other devices | Router AP/client isolation, guest Wi-Fi, different subnet/VLAN | Connect both to the same normal Wi-Fi; disable client isolation |
 | Address changed after reboot | DHCP gave a new IP | Reserve the laptop's address in the router; re-scan the QR code |
 | Service will not start / "port is already in use" | Another program uses the port | `homeserver.exe set-port 8787`, `homeserver.exe restart`, `homeserver.exe firewall add` |
+| Adding a share fails with "cannot read this folder" | The service account (LocalService) has no access to it, typical for folders under `C:\Users\<you>` | `homeserver.exe grant "C:\Users\you\Downloads"` in an administrator terminal (add `--readonly` for a read-only share), then add the share again |
 | Share shows **denied** | Service account (LocalService) cannot read the folder | `homeserver.exe grant "D:\Folder"` (administrator) or reinstall with `--account` |
 | Share shows **offline** | Drive disconnected or folder renamed/deleted | Reconnect the drive; it recovers automatically. If the folder was renamed, remove and re-add the share |
 | Upload fails with 507 | Server disk full | Free space on the drive holding the share (Diagnostics shows free space) |

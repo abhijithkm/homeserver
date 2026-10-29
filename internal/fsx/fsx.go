@@ -606,21 +606,32 @@ func ValidateRootPath(p string) (string, error) {
 		if errors.Is(err, fs.ErrNotExist) {
 			return "", errors.New("folder does not exist")
 		}
-		return "", err
+		return "", unreadable(abs, err)
 	}
 	if !fi.IsDir() {
 		return "", errors.New("path is not a folder")
 	}
 	d, err := os.Open(abs)
 	if err != nil {
-		return "", fmt.Errorf("folder is not readable by the HomeServer account: %w", err)
+		return "", unreadable(abs, err)
 	}
 	_, rerr := d.ReadDir(1)
 	d.Close()
 	if rerr != nil && rerr != io.EOF {
-		return "", fmt.Errorf("folder is not readable by the HomeServer account: %w", rerr)
+		return "", unreadable(abs, rerr)
 	}
 	return abs, nil
+}
+
+// unreadable explains why a folder cannot be shared. A permission error is the
+// common case (the service runs as LocalService, which cannot read folders such
+// as C:\Users\<name>\Downloads), so it says how to fix it instead of showing the
+// raw system error.
+func unreadable(abs string, err error) error {
+	if errors.Is(err, fs.ErrPermission) {
+		return fmt.Errorf(`the HomeServer service account cannot read this folder. In an administrator terminal run: homeserver.exe grant "%s" (add --readonly for a read-only share), then add the share again`, abs)
+	}
+	return fmt.Errorf("folder is not readable by the HomeServer account: %w", err)
 }
 
 // MapErr converts an OS error into one of the package's sentinel errors

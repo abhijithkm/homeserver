@@ -14,6 +14,7 @@ All notable changes to HomeServer are documented here. The format follows
 - Installer task (on by default) adds the install folder to the system PATH; the entry is removed on uninstall and never duplicated on upgrade.
 
 ### Fixed
+- Adding a share the service account cannot read (for example a folder under `C:\Users\<name>`) now says so and shows the `homeserver.exe grant` command, instead of the raw "Access is denied" system error.
 - Tray status no longer depends on reading `runtime.json` from the administrator-only data folder; it asks the Windows service manager for the state and probes the default port.
 
 ## [1.0.0] - Unreleased

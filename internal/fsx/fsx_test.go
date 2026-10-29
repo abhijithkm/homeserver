@@ -33,6 +33,23 @@ func write(t *testing.T, p, s string) {
 	}
 }
 
+func TestUnreadableExplainsPermissionErrors(t *testing.T) {
+	raw := &os.PathError{Op: "CreateFile", Path: `C:\Users\me\Downloads`, Err: os.ErrPermission}
+	msg := unreadable(`C:\Users\me\Downloads`, raw).Error()
+	for _, want := range []string{"service account cannot read", `homeserver.exe grant "C:\Users\me\Downloads"`, "--readonly"} {
+		if !strings.Contains(msg, want) {
+			t.Errorf("message %q lacks %q", msg, want)
+		}
+	}
+	if strings.Contains(msg, "CreateFile") {
+		t.Errorf("raw system error leaked into the message: %q", msg)
+	}
+	other := unreadable(`D:\x`, errors.New("disk on fire")).Error()
+	if !strings.Contains(other, "disk on fire") {
+		t.Errorf("non-permission errors should keep their cause: %q", other)
+	}
+}
+
 func TestValidateNameRejects(t *testing.T) {
 	bad := []string{"", ".", "..", "a/b", `a\b`, "a:b", "file.", "file ", "CON", "nul.txt", "com1", "LPT9.log", "a*b", "a\x00b", TempDirName, strings.Repeat("x", 256)}
 	for _, n := range bad {
