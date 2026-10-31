@@ -8,6 +8,14 @@ import { FilesPage } from './Files'
 import { AdminPage } from './Admin'
 import { AccountPage } from './Account'
 
+/** Administration sections shown under "Manage": route key, label, icon. */
+const MANAGE: [string, string, 'drive' | 'users' | 'settings' | 'pulse'][] = [
+  ['shares', 'Shares', 'drive'],
+  ['users', 'Users', 'users'],
+  ['settings', 'Settings', 'settings'],
+  ['diagnostics', 'Diagnostics', 'pulse'],
+]
+
 type Phase =
   | { kind: 'loading' }
   | { kind: 'error'; message: string }
@@ -42,6 +50,13 @@ export default function App() {
   useEffect(() => {
     void boot()
   }, [boot])
+
+  // Administrators land on the dashboard when no page was asked for; everyone else lands on Files.
+  useEffect(() => {
+    if (phase.kind === 'app' && phase.user.role === 'admin' && /^#?\/?$/.test(window.location.hash)) {
+      window.location.replace('#/admin/dashboard')
+    }
+  }, [phase])
 
   // Any 401 from the API means the session ended.
   useEffect(() => {
@@ -81,6 +96,7 @@ export default function App() {
   const { user } = phase
   const isAdmin = user.role === 'admin'
   const page = route.page === 'admin' && !isAdmin ? 'files' : route.page
+  const tab = route.tab ?? 'dashboard'
 
   const logout = async () => {
     try {
@@ -100,21 +116,38 @@ export default function App() {
       </a>
       <div className="rail">
         <header className="brand">
-          <BrandMark />
-          <span className="brand-name">HomeServer</span>
+          <a className="brand-link" href={isAdmin ? '#/admin/dashboard' : '#/files'}>
+            <BrandMark />
+            <span className="brand-name">HomeServer</span>
+          </a>
         </header>
         <nav aria-label="Main" className="nav">
+          {isAdmin ? (
+            <a href="#/admin/dashboard" aria-current={page === 'admin' && tab === 'dashboard' ? 'page' : undefined}>
+              <Icon name="dashboard" />
+              <span>Dashboard</span>
+            </a>
+          ) : null}
           <a href="#/files" aria-current={page === 'files' ? 'page' : undefined}>
             <Icon name="folder" />
             <span>Files</span>
           </a>
           {isAdmin ? (
-            <a href="#/admin/dashboard" aria-current={page === 'admin' ? 'page' : undefined}>
-              <Icon name="shield" />
-              <span>Admin</span>
-            </a>
+            <>
+              <span className="nav-label">Manage</span>
+              {MANAGE.map(([k, label, icon]) => (
+                <a key={k} className="nav-sub" href={`#/admin/${k}`} aria-current={page === 'admin' && tab === k ? 'page' : undefined}>
+                  <Icon name={icon} />
+                  <span>{label}</span>
+                </a>
+              ))}
+              <a className="nav-manage" href="#/admin/shares" aria-current={page === 'admin' && tab !== 'dashboard' ? 'page' : undefined}>
+                <Icon name="settings" />
+                <span>Manage</span>
+              </a>
+            </>
           ) : null}
-          <a href="#/account" aria-current={page === 'account' ? 'page' : undefined}>
+          <a className="nav-account" href="#/account" aria-current={page === 'account' ? 'page' : undefined}>
             <Icon name="user" />
             <span>Account</span>
           </a>

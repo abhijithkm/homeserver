@@ -17,6 +17,7 @@ All notable changes to HomeServer are documented here. The format follows
 
 ### Changed
 - New web interface for administrators and everyone else: a dark side rail on wide screens that becomes a top bar with a bottom tab bar on tablets and phones, shares shown as drive bays with a status light, stacked file rows on phones, bottom-sheet dialogs, and the same teal and ink look in light and dark mode. Checked at 320 px with no horizontal scrolling.
+- Navigation: administrators now land on the Dashboard when they open HomeServer (everyone else lands on Files). The side rail lists Dashboard and Files, then a Manage group (Shares, Users, Settings, Diagnostics), then Account; on phones the bottom bar has Dashboard, Files, Manage and Account, and Manage opens the section tabs. The page title names the current section, and the HomeServer logo links home.
 - Admin dashboard is now a full status page: a health headline with lamps for server, database, network, shares, disk space, HTTPS and updates; live tiles for uptime, transfer slots, memory, shares and accounts; disk meters per share; the connect address and QR code; recent transfers with a summary; recent events; and server details with restart and backup. It refreshes by itself every 10 seconds while the tab is open.
 
 ### Fixed

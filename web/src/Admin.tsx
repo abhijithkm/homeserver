@@ -22,7 +22,7 @@ export function AdminPage({ tab, tls, currentUserId }: { tab: string; tls: boole
   const current = TABS.some(([k]) => k === tab) ? tab : 'dashboard'
   return (
     <section aria-labelledby="admin-h">
-      <h1 id="admin-h">Administration</h1>
+      <h1 id="admin-h">{TABS.find(([k]) => k === current)?.[1] ?? 'Administration'}</h1>
       <nav aria-label="Admin sections" className="tabs">
         {TABS.map(([k, label]) => (
           <a key={k} href={`#/admin/${k}`} aria-current={current === k ? 'page' : undefined}>

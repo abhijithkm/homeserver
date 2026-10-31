@@ -247,16 +247,39 @@ describe('permission-aware UI', () => {
     expect(screen.getByText('Choose files')).toBeInTheDocument()
   })
 
-  it('hides the Admin nav from non-admins and blocks the admin route', async () => {
+  it('hides the admin navigation from non-admins and blocks the admin route', async () => {
     setup(writer, {}, '#/admin/users')
-    await screen.findByRole('navigation', { name: 'Main' })
-    expect(screen.queryByRole('link', { name: 'Admin' })).not.toBeInTheDocument()
+    const nav = await screen.findByRole('navigation', { name: 'Main' })
+    for (const name of ['Dashboard', 'Shares', 'Users', 'Settings', 'Diagnostics', 'Manage']) {
+      expect(within(nav).queryByRole('link', { name })).not.toBeInTheDocument()
+    }
+    expect(within(nav).getByRole('link', { name: 'Files' })).toBeInTheDocument()
+    expect(within(nav).getByRole('link', { name: 'Account' })).toBeInTheDocument()
     expect(await screen.findByRole('heading', { name: 'Shared folders' })).toBeInTheDocument()
   })
 
-  it('shows the Admin nav to administrators', async () => {
+  it('shows the Dashboard and Manage navigation to administrators', async () => {
     setup(admin)
-    expect(await screen.findByRole('link', { name: 'Admin' })).toHaveAttribute('href', '#/admin/dashboard')
+    const nav = await screen.findByRole('navigation', { name: 'Main' })
+    expect(within(nav).getByRole('link', { name: 'Dashboard' })).toHaveAttribute('href', '#/admin/dashboard')
+    expect(within(nav).getByRole('link', { name: 'Shares' })).toHaveAttribute('href', '#/admin/shares')
+    expect(within(nav).getByRole('link', { name: 'Users' })).toHaveAttribute('href', '#/admin/users')
+    expect(within(nav).getByRole('link', { name: 'Settings' })).toHaveAttribute('href', '#/admin/settings')
+    expect(within(nav).getByRole('link', { name: 'Diagnostics' })).toHaveAttribute('href', '#/admin/diagnostics')
+    expect(within(nav).getByRole('link', { name: 'Files' })).toHaveAttribute('aria-current', 'page')
+  })
+
+  it('opens the dashboard first for administrators', async () => {
+    setup(admin, {}, '')
+    await waitFor(() => expect(window.location.hash).toBe('#/admin/dashboard'))
+    expect(await screen.findByRole('heading', { name: 'Dashboard' })).toBeInTheDocument()
+    expect(within(screen.getByRole('navigation', { name: 'Main' })).getByRole('link', { name: 'Dashboard' })).toHaveAttribute('aria-current', 'page')
+  })
+
+  it('opens Files first for everyone else and keeps an explicit page', async () => {
+    setup(writer, {}, '')
+    expect(await screen.findByRole('heading', { name: 'Shared folders' })).toBeInTheDocument()
+    expect(window.location.hash).toBe('')
   })
 })
 
