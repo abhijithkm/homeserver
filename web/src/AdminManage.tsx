@@ -3,7 +3,7 @@ import type { FormEvent } from 'react'
 import * as api from './api'
 import type { Role, Share, User } from './types'
 import { formatUnix, grantCommand, grantPathFromError } from './format'
-import { ConfirmDialog, CopyButton, Empty, ErrorText, Notice, PromptDialog, Spinner } from './ui'
+import { ConfirmDialog, CopyButton, Empty, ErrorText, Led, Notice, PromptDialog, Spinner } from './ui'
 import { FolderPicker } from './FolderPicker'
 import { ShareBadges, shareProblemText } from './Files'
 import { useLoad } from './useLoad'
@@ -123,6 +123,7 @@ export function SharesAdmin() {
           return (
             <li key={s.id} className="card share">
               <div className="share-main">
+                <Led status={s.status} />
                 <strong className="share-name">{s.name}</strong>
                 <span className="badges">
                   <ShareBadges share={s} />

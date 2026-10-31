@@ -5,7 +5,7 @@ import type { Entry, Share, SortKey, User } from './types'
 import type { Route } from './router'
 import { filesHash } from './router'
 import { canPreview, formatBytes, formatDate, joinPath, parentPath } from './format'
-import { ConfirmDialog, Dialog, Empty, ErrorText, Notice, PromptDialog, Spinner } from './ui'
+import { ConfirmDialog, Dialog, Empty, ErrorText, Icon, Led, Notice, PromptDialog, Spinner } from './ui'
 import { UploadPanel, useUploads } from './Uploads'
 
 const PAGE = 100
@@ -88,6 +88,7 @@ function SharesList({ user }: { user: User }) {
             return (
               <li key={s.id} className={`card share share-${s.status}`}>
                 <div className="share-main">
+                  <Led status={s.status} />
                   {open ? (
                     <a className="share-name" href={filesHash(s.id)}>
                       {s.name}
@@ -343,12 +344,12 @@ function Browser({ user, shareId, path, sort, desc, setSort, uploads }: BrowserP
                     <td className="col-name">
                       {e.isDir ? (
                         <a className="entry dir" href={filesHash(shareId, full)}>
-                          <span aria-hidden="true">{'📁 '}</span>
+                          <Icon name="folder" />
                           {e.name}
                         </a>
                       ) : (
                         <span className="entry">
-                          <span aria-hidden="true">{'📄 '}</span>
+                          <Icon name="file" />
                           {e.name}
                         </span>
                       )}
@@ -526,7 +527,7 @@ function FolderPicker({ shareId, item, itemPath, currentDir, busy, error, onCanc
           {folders.map((f) => (
             <li key={f.name}>
               <button type="button" className="btn btn-quiet" onClick={() => setDir(joinPath(dir, f.name))}>
-                {'📁 '}
+                <Icon name="folder" />
                 {f.name}
               </button>
             </li>

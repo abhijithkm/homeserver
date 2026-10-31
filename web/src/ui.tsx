@@ -195,3 +195,35 @@ export function CopyButton({ text, label = 'Copy' }: { text: string; label?: str
 export function StatusBadge({ status }: { status: string }) {
   return <span className={`badge badge-${status}`}>{status}</span>
 }
+
+const ICONS: Record<string, string> = {
+  folder: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
+  file: 'M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM14 3v5h5',
+  drive: 'M4 14h16v5H4zM4 14l2.5-8h11L20 14M7.5 16.5h.01M11 16.5h5',
+  shield: 'M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z',
+  user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20a7.5 7.5 0 0 1 15 0',
+  logout: 'M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M15 8l4 4-4 4M19 12H9',
+}
+
+/** Decorative line icon; the label next to it names the control. */
+export function Icon({ name }: { name: keyof typeof ICONS }) {
+  return (
+    <svg className="icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <path d={ICONS[name]} />
+    </svg>
+  )
+}
+
+/** A drive-bay slot with a status LED: the HomeServer mark. */
+export function BrandMark({ large }: { large?: boolean }) {
+  return (
+    <span className={`mark${large ? ' mark-lg' : ''}`} aria-hidden="true">
+      <span className="mark-led" />
+    </span>
+  )
+}
+
+/** Status LED shown on shares; colour carries state, the text badge beside it says it in words. */
+export function Led({ status }: { status: string }) {
+  return <span className={`led led-${status}`} aria-hidden="true" />
+}

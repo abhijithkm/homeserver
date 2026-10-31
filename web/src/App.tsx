@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import * as api from './api'
 import type { SetupStatus, User } from './types'
 import { useRoute } from './router'
-import { Spinner } from './ui'
+import { BrandMark, Icon, Spinner } from './ui'
 import { LoginScreen, SetupScreen } from './Auth'
 import { FilesPage } from './Files'
 import { AdminPage } from './Admin'
@@ -63,6 +63,7 @@ export default function App() {
     return (
       <main className="center-page">
         <div className="card narrow">
+          <BrandMark large />
           <h1>HomeServer</h1>
           <p role="alert" className="error">
             {phase.message}
@@ -97,34 +98,49 @@ export default function App() {
       <a className="skip" href="#main">
         Skip to content
       </a>
-      <header className="topbar">
-        <span className="brand">HomeServer</span>
+      <div className="rail">
+        <header className="brand">
+          <BrandMark />
+          <span className="brand-name">HomeServer</span>
+        </header>
         <nav aria-label="Main" className="nav">
           <a href="#/files" aria-current={page === 'files' ? 'page' : undefined}>
-            Files
+            <Icon name="folder" />
+            <span>Files</span>
           </a>
           {isAdmin ? (
             <a href="#/admin/dashboard" aria-current={page === 'admin' ? 'page' : undefined}>
-              Admin
+              <Icon name="shield" />
+              <span>Admin</span>
             </a>
           ) : null}
           <a href="#/account" aria-current={page === 'account' ? 'page' : undefined}>
-            Account
+            <Icon name="user" />
+            <span>Account</span>
           </a>
         </nav>
-        <span className="who" title={`Signed in as ${user.username}`}>
-          {user.username} <span className="badge badge-role">{user.role}</span>
-        </span>
-        <button type="button" className="btn btn-sm" onClick={() => void logout()}>
-          Log out
-        </button>
-      </header>
+        <div className="acct">
+          <span className="who" title={`Signed in as ${user.username}`}>
+            <span className="avatar" aria-hidden="true">
+              {user.username.slice(0, 1).toUpperCase()}
+            </span>
+            <span className="who-text">
+              <span className="who-name">{user.username}</span>
+              <span className="badge badge-role">{user.role}</span>
+            </span>
+          </span>
+          <button type="button" className="btn btn-sm btn-logout" onClick={() => void logout()}>
+            <Icon name="logout" />
+            <span>Log out</span>
+          </button>
+        </div>
+        {phase.version ? <footer className="foot">HomeServer {phase.version}</footer> : null}
+      </div>
       <main id="main" tabIndex={-1} className="content">
         {page === 'files' && <FilesPage user={user} route={route} />}
         {page === 'admin' && isAdmin && <AdminPage tls={phase.tls} tab={route.tab ?? 'dashboard'} currentUserId={user.id} />}
         {page === 'account' && <AccountPage user={user} />}
       </main>
-      {phase.version ? <footer className="foot">HomeServer {phase.version}</footer> : null}
     </div>
   )
 }

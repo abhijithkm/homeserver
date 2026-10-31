@@ -242,6 +242,33 @@ describe('dashboard', () => {
     expect(await screen.findByText('Photos/a.jpg')).toBeInTheDocument()
   })
 
+  it('summarises health in a headline, lamps, disk meters and recent events', async () => {
+    open('#/admin/dashboard', {
+      ...routes({ urls: ['http://192.168.1.10:8686'], addresses: [{ interface: 'Wi-Fi', ip: '192.168.1.10', private: true }], port: 8686, tls: false, listening: '' }),
+      'GET /api/admin/status': { json: { ...status, sharesUnavailable: 0 } },
+      'GET /api/admin/diagnose': {
+        json: { database: true, listening: '', port: 8686, tls: false, urls: [], hints: [], dataDir: 'C:\\ProgramData\\HomeServer', shares: [{ name: 'Photos', status: 'online', freeBytes: 10 * 1024 ** 3, totalBytes: 100 * 1024 ** 3 }] },
+      },
+      'GET /api/admin/users': { json: [admin, writer] },
+      'GET /api/admin/audit': { json: [{ ts: 1700000000, actor: 'carol', ip: '192.168.1.5', event: 'login', detail: '' }] },
+    })
+    expect(await screen.findByRole('heading', { name: 'Everything is running' })).toBeInTheDocument()
+    const lamps = screen.getByRole('list', { name: 'System checks' })
+    expect(await within(lamps).findByText('Working')).toBeInTheDocument()
+    expect(within(lamps).getByText('Enough free')).toBeInTheDocument()
+    expect(within(lamps).getByText('HTTP, not encrypted')).toBeInTheDocument()
+    expect(await screen.findByText('10.0 GB free of 100 GB')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'Photos disk used: 90%' })).toBeInTheDocument()
+    expect(await screen.findByText('1 admin, 0 turned off')).toBeInTheDocument()
+    expect(within(await screen.findByRole('list', { name: 'Recent events' })).getByText('carol')).toBeInTheDocument()
+  })
+
+  it('counts what needs attention in the headline and on the shares lamp', async () => {
+    open('#/admin/dashboard', routes({ urls: ['http://192.168.1.10:8686'], addresses: [{ interface: 'Wi-Fi', ip: '192.168.1.10', private: true }], port: 8686, tls: false, listening: '' }))
+    expect(await screen.findByRole('heading', { name: '1 thing needs attention' })).toBeInTheDocument()
+    expect(within(screen.getByRole('list', { name: 'System checks' })).getByText('1 of 2 online')).toBeInTheDocument()
+  })
+
   it('announces an available update without offering to install it from the browser', async () => {
     open('#/admin/dashboard', {
       ...routes({ urls: [], addresses: [], port: 1, tls: false, listening: '' }),

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import * as api from './api'
-import { ErrorText, Notice } from './ui'
+import { BrandMark, ErrorText, Notice } from './ui'
 
 export function SetupScreen({ local, onDone }: { local: boolean; onDone: () => void }) {
   const [username, setUsername] = useState('')
@@ -14,6 +14,7 @@ export function SetupScreen({ local, onDone }: { local: boolean; onDone: () => v
     return (
       <main className="center-page">
         <div className="card narrow">
+          <BrandMark large />
           <h1>HomeServer setup</h1>
           <Notice kind="warn">
             HomeServer has not been set up yet. For safety, the first administrator can only be created from the
@@ -45,6 +46,7 @@ export function SetupScreen({ local, onDone }: { local: boolean; onDone: () => v
   return (
     <main className="center-page">
       <form className="card narrow" onSubmit={submit} aria-labelledby="setup-title">
+        <BrandMark large />
         <h1 id="setup-title">Welcome to HomeServer</h1>
         <p>Create the administrator account. You will use it to choose which folders to share and to add other people.</p>
         <label htmlFor="su-user">Administrator username</label>
@@ -85,6 +87,7 @@ export function LoginScreen({ expired, onDone }: { expired?: boolean; onDone: ()
   return (
     <main className="center-page">
       <form className="card narrow" onSubmit={submit} aria-labelledby="login-title">
+        <BrandMark large />
         <h1 id="login-title">Sign in to HomeServer</h1>
         {expired ? <Notice kind="info">Your session ended. Please sign in again.</Notice> : null}
         <label htmlFor="li-user">Username</label>
