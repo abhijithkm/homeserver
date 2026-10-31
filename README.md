@@ -72,6 +72,18 @@ On **Android**, if the page will not load (even though the laptop and other devi
 
 Plain `http://` is not encrypted; see [HTTPS](#https-and-security-limits).
 
+### Installing HomeServer as an app on a phone or PC
+
+HomeServer is an installable web app: it opens in its own window with the HomeServer icon, without the browser's address bar. Open **Account** and look at **Install on this device**, or use the browser menu:
+
+| Device | What you get |
+|---|---|
+| iPhone / iPad (Safari) | Tap Share, then **Add to Home Screen**. Works over plain HTTP. |
+| Android (Chrome), Windows / Mac / Linux (Chrome, Edge) over **HTTPS** with a certificate the device trusts | A real app install: an **Install app** button appears on the Account page and in the browser menu. |
+| Android or desktop Chrome / Edge over plain **HTTP** (the default) | Browsers only offer a full install on HTTPS, so the menu gives **Add to Home screen**, a shortcut that opens in the browser. |
+
+To get the full install on Android and PCs, turn on HTTPS (Admin → Settings → HTTPS) **and** make each device trust the certificate. A self-signed certificate is not enough: the browser shows a warning and disables installing. A certificate from a local authority that the device trusts (for example one made with `mkcert`, with its root certificate installed on each device) works in principle; this has not been tried with HomeServer yet. The installed app caches nothing, so it never shows stale pages or keeps your files or session on the device beyond normal browser cookies.
+
 ## Accounts and permissions
 
 | Role | Can |

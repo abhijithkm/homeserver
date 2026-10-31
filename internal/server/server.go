@@ -411,6 +411,9 @@ func (s *Server) handleStatic(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.Header().Set("Cache-Control", "no-cache")
 	}
+	if strings.HasSuffix(p, ".webmanifest") { // not in Go's built-in table, and Windows may not have it registered
+		w.Header().Set("Content-Type", "application/manifest+json")
+	}
 	if rs, ok := f.(io.ReadSeeker); ok {
 		http.ServeContent(w, r, p, fi.ModTime(), rs)
 		return

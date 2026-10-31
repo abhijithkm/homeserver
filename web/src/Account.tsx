@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import * as api from './api'
 import type { User } from './types'
 import { ErrorText, Notice } from './ui'
+import { InstallCard } from './Install'
 
 export function AccountPage({ user }: { user: User }) {
   const [current, setCurrent] = useState('')
@@ -53,6 +54,7 @@ export function AccountPage({ user }: { user: User }) {
           </dd>
         </dl>
       </div>
+      <InstallCard />
       <form className="card narrow-form" onSubmit={submit} aria-labelledby="pw-h">
         <h2 id="pw-h">Change password</h2>
         <label htmlFor="pw-cur">Current password</label>
